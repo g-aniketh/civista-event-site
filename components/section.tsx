@@ -14,25 +14,29 @@ type SectionProps = {
 
 export function Section({ id, title, description, className, children }: SectionProps) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className={cn("scroll-mt-6", className)}>
+    <section id={id} aria-labelledby={`${id}-title`} className={cn("scroll-mt-20", className)}>
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-10% 0px -10% 0px" }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="space-y-4"
+        className="space-y-6"
       >
         {(title || description) && (
-          <header className="space-y-1">
+          <header className="space-y-4 text-center">
             {title && (
               <>
-                <h2 id={`${id}-title`} className="text-pretty text-2xl font-semibold tracking-tight">
+                <h2 id={`${id}-title`} className="text-pretty text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-5xl">
                   {title}
                 </h2>
-                <div className="h-0.5 w-12 rounded-full accent-gradient opacity-70" aria-hidden />
+                <div className="mx-auto h-1 w-20 rounded-full bg-gradient-to-r from-blue-600 to-emerald-600" aria-hidden />
               </>
             )}
-            {description && <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>}
+            {description && (
+              <p className="mx-auto max-w-3xl text-lg text-muted-foreground md:text-xl">
+                {description}
+              </p>
+            )}
           </header>
         )}
         {children}

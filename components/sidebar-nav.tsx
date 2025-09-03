@@ -1,75 +1,108 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { useScrollSpy } from "./use-scroll-spy"
-import { useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
 
-type Section = {
+interface Section {
   id: string
   label: string
 }
 
-export function SidebarNav({ sections }: { sections: Section[] }) {
-  const activeId = useScrollSpy({ sectionIds: sections.map((s) => s.id) })
+interface SidebarNavProps {
+  sections: Section[]
+}
 
-  const handleClick = useCallback((id: string) => {
+export function SidebarNav({ sections }: SidebarNavProps) {
+  const [activeSection, setActiveSection] = useState<string>("home")
+
+  useEffect(() => {
+    const observerOptions = {
+      rootMargin: "-20% 0px -80% 0px",
+      threshold: 0
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id)
+        }
+      })
+    }, observerOptions)
+
+    // Observe all sections
+    sections.forEach((section) => {
+      const element = document.getElementById(section.id)
+      if (element) {
+        observer.observe(element)
+      }
+    })
+
+    return () => {
+      sections.forEach((section) => {
+        const element = document.getElementById(section.id)
+        if (element) {
+          observer.unobserve(element)
+        }
+      })
+    }
+  }, [sections])
+
+  const scrollToSection = (id: string) => {
     const el = document.getElementById(id)
     if (!el) return
-    const y = el.getBoundingClientRect().top + window.scrollY - 16
+    const y = el.getBoundingClientRect().top + window.scrollY - 80
     window.scrollTo({ top: y, behavior: "smooth" })
-  }, [])
+  }
 
   return (
-    <nav
-      aria-label="Section navigation"
-      className="sticky top-4 z-30 hidden h-[calc(100vh-2rem)] w-56 flex-col justify-between rounded-xl border bg-background/60 p-3 shadow-sm backdrop-blur md:flex"
-    >
-      <div className="flex flex-col gap-1">
-        <div className="px-2 pb-2 pt-1">
-          <div className="text-sm font-medium text-muted-foreground">Civista Club</div>
-          <div className="text-sm text-foreground">Event Portal</div>
+    <div className="sticky top-8 space-y-2">
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 flex items-center justify-center">
+            <span className="text-white font-bold text-sm">C</span>
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-foreground">Civista Club</div>
+            <div className="text-xs text-muted-foreground">Technovista 2025</div>
+          </div>
         </div>
-
-        {sections.map((s) => {
-          const isActive = s.id === activeId
-          return (
-            <button
-              key={s.id}
-              onClick={() => handleClick(s.id)}
-              className={cn(
-                "group relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition",
-                isActive
-                  ? "bg-white/5 text-blue-300 ring-1 ring-blue-500/20"
-                  : "hover:bg-white/5 hover:text-foreground/90",
-              )}
-              aria-current={isActive ? "true" : undefined}
-            >
-              <span
-                className={cn(
-                  "absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-r-full transition-all",
-                  isActive ? "w-1.5 accent-gradient" : "w-0 bg-transparent",
-                )}
-              />
-              <span className="text-sm">{s.label}</span>
-            </button>
-          )
-        })}
+        <div className="h-px bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-emerald-600/20" />
       </div>
 
-      <div className="p-2">
+      <nav className="space-y-1">
+        {sections.map((section) => (
+          <motion.div
+            key={section.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full justify-start h-10 px-3 text-sm font-medium transition-all duration-200",
+                activeSection === section.id
+                  ? "bg-gradient-to-r from-blue-600/10 to-emerald-600/10 text-blue-600 dark:text-blue-400 border-l-2 border-blue-600 dark:border-blue-400"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              )}
+              onClick={() => scrollToSection(section.id)}
+            >
+              <span className="truncate">{section.label}</span>
+            </Button>
+          </motion.div>
+        ))}
+      </nav>
+
+      <div className="pt-4">
         <Button
-          className="w-full btn-accent shadow-lg shadow-blue-500/20 hover:brightness-110"
-          onClick={() => {
-            const el = document.getElementById("registration")
-            if (!el) return
-            const y = el.getBoundingClientRect().top + window.scrollY - 16
-            window.scrollTo({ top: y, behavior: "smooth" })
-          }}
+          onClick={() => scrollToSection("registration")}
+          className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
         >
           Register Now
         </Button>
       </div>
-    </nav>
+    </div>
   )
 }

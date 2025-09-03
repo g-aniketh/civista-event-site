@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { RegistrationForm } from "@/components/registration-form"
 import { motion } from "framer-motion"
-import { AnimatedHeroVisual } from "@/components/animated-hero"
+import { Calendar, Users, Trophy, Sparkles, Menu, X, IndianRupee, Clock, MapPin } from "lucide-react"
+import { useState } from "react"
+import { config } from "@/lib/config"
 
 const sections = [
   { id: "home", label: "Home" },
@@ -19,67 +22,135 @@ const sections = [
 ]
 
 export default function Page() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    const y = el.getBoundingClientRect().top + window.scrollY - 80
+    window.scrollTo({ top: y, behavior: "smooth" })
+    setMobileMenuOpen(false)
+  }
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 md:grid md:grid-cols-[14rem_1fr] md:gap-6">
-      {/* Sidebar */}
-      <aside className="md:col-start-1">
-        <SidebarNav sections={sections} />
-      </aside>
-
-      {/* Content */}
-      <div className="md:col-start-2 md:space-y-24">
-        {/* Home / Hero */}
-        <Section
-          id="home"
-          title="Civista Club Presents: Annual College Fest"
-          description="A celebration of creativity, innovation, and community. Join us for workshops, competitions, and unforgettable experiences."
-          className="space-y-8"
-        >
-          {/* Animated visual inspired by the reference */}
-          <div className="orbit-overlay">
-            <AnimatedHeroVisual />
+    <>
+      {/* Mobile Navigation Header */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-800 md:hidden">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-blue-600 to-emerald-600 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">C</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-foreground">Civista Club</div>
+              <div className="text-xs text-muted-foreground">Technovista 2025</div>
+            </div>
           </div>
-
-          <div className="flex flex-col gap-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="rounded-xl border bg-card/60 p-6 shadow-sm backdrop-blur"
-            >
-              <div className="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="space-y-2">
-                  {/* Heading with tiny accent gradient + soft glow */}
-                  <h1 className="text-balance text-3xl font-bold leading-tight md:text-5xl text-gradient glow">
-                    Experience the Future on Campus
-                  </h1>
-                  {/* small accent bar underline */}
-                  <div className="h-1 w-24 rounded-full accent-gradient opacity-70" aria-hidden />
-                  <p className="max-w-2xl text-muted-foreground">
-                    Our Mission: To empower students through hands-on events and a supportive community. We cultivate
-                    leadership, creativity, and curiosity—creating real impact that lasts beyond the event.
-                  </p>
-                  <div className="text-sm text-blue-300/80">
-                    Powered by <span className="font-semibold text-emerald-400">Civista Club</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    size="lg"
-                    onClick={() => {
-                      const el = document.getElementById("registration")
-                      if (!el) return
-                      const y = el.getBoundingClientRect().top + window.scrollY - 16
-                      window.scrollTo({ top: y, behavior: "smooth" })
-                    }}
-                    className="btn-accent shadow-lg shadow-blue-500/20 hover:brightness-110"
-                  >
-                    Register Now
-                  </Button>
-                </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
+        
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+          >
+            <nav className="px-4 py-3 space-y-2">
+              {sections.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => scrollToSection(s.id)}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-sm font-medium text-foreground"
+                >
+                  {s.label}
+                </button>
+              ))}
+              <div className="pt-2">
+                <Button
+                  onClick={() => scrollToSection("registration")}
+                  className="w-full bg-gradient-to-r from-blue-600 to-emerald-600 text-white"
+                >
+                  Register Now
+                </Button>
               </div>
-            </motion.div>
+            </nav>
+          </motion.div>
+        )}
+      </header>
 
+      <main className="mx-auto max-w-7xl px-4 py-8 md:grid md:grid-cols-[280px_1fr] md:gap-8">
+        {/* Sidebar */}
+        <aside className="md:col-start-1">
+          <SidebarNav sections={sections} />
+        </aside>
+
+        {/* Content */}
+        <div className="md:col-start-2 md:space-y-32">
+          {/* Home / Hero */}
+          <Section
+            id="home"
+            title="Civista Club Presents: Technovista 2025"
+            description="A celebration of creativity, innovation, and community. Join us for workshops, competitions, and unforgettable experiences."
+            className="space-y-12"
+          >
+            {/* Hero Content */}
+            <div className="flex flex-col gap-8">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="space-y-6"
+              >
+                {/* Main Heading */}
+                <div className="space-y-4">
+                  <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
+                    Experience the Future on{" "}
+                    <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
+                      Campus
+                    </span>
+                  </h1>
+                  <div className="h-1 w-32 rounded-full bg-gradient-to-r from-blue-600 to-emerald-600" aria-hidden />
+                </div>
+                
+                {/* Subtitle */}
+                <p className="max-w-3xl text-xl leading-relaxed text-muted-foreground md:text-2xl">
+                  Our Mission: To empower students through hands-on events and a supportive community. We cultivate
+                  leadership, creativity, and curiosity—creating real impact that lasts beyond the event.
+                </p>
+                
+                {/* Powered by */}
+                <div className="text-base text-blue-600 dark:text-blue-400">
+                  Powered by <span className="font-semibold text-emerald-600 dark:text-emerald-400">Civista Club</span>
+                </div>
+              </motion.div>
+
+              {/* CTA Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                className="flex items-center gap-4"
+              >
+                <Button
+                  size="lg"
+                  onClick={() => scrollToSection("registration")}
+                  className="bg-gradient-to-r from-blue-600 to-emerald-600 px-8 py-4 text-lg font-semibold text-white shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 transition-all duration-300 hover:scale-105"
+                >
+                  Register Now
+                </Button>
+              </motion.div>
+            </div>
+
+            {/* Feature Cards */}
             <motion.div
               initial="hidden"
               whileInView="show"
@@ -87,267 +158,235 @@ export default function Page() {
               variants={{
                 hidden: {},
                 show: {
-                  transition: { staggerChildren: 0.08 },
+                  transition: { staggerChildren: 0.1 },
                 },
               }}
-              className="grid gap-4 md:grid-cols-3"
+              className="grid gap-6 md:grid-cols-3"
             >
               {[
-                { title: "Workshops", desc: "Hands-on sessions led by industry mentors." },
-                { title: "Competitions", desc: "Showcase talent in coding, design, and more." },
-                { title: "Showcase", desc: "Explore projects and innovations from peers." },
-              ].map((i) => (
+                { 
+                  title: "Workshops", 
+                  desc: "Hands-on sessions led by industry mentors and experts.",
+                  icon: Sparkles,
+                  color: "from-blue-500 to-blue-600"
+                },
+                { 
+                  title: "Competitions", 
+                  desc: "Showcase your talent in coding, design, and innovation.",
+                  icon: Trophy,
+                  color: "from-purple-500 to-purple-600"
+                },
+                { 
+                  title: "Showcase", 
+                  desc: "Explore amazing projects and innovations from your peers.",
+                  icon: Users,
+                  color: "from-emerald-500 to-emerald-600"
+                },
+              ].map((item) => (
                 <motion.div
-                  key={i.title}
+                  key={item.title}
                   variants={{
-                    hidden: { opacity: 0, y: 20 },
+                    hidden: { opacity: 0, y: 30 },
                     show: { opacity: 1, y: 0 },
                   }}
                 >
-                  <Card className="group h-full border-blue-100 transition hover:border-blue-300 hover:shadow-md dark:border-blue-900/30 dark:hover:border-blue-700/50">
-                    <CardHeader>
-                      <CardTitle className="text-lg">{i.title}</CardTitle>
-                      <CardDescription>{i.desc}</CardDescription>
+                  <Card className="group h-full border-0 bg-gradient-to-br from-white to-gray-50 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 dark:from-gray-800 dark:to-gray-900">
+                    <CardHeader className="pb-4">
+                      <div className={`mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r ${item.color} text-white shadow-lg`}>
+                        <item.icon className="h-6 w-6" />
+                      </div>
+                      <CardTitle className="text-xl font-semibold text-foreground">{item.title}</CardTitle>
+                      <CardDescription className="text-base text-muted-foreground">{item.desc}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="h-24 rounded-md bg-muted/40" aria-hidden />
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          </Section>
+
+          {/* Registration */}
+          <Section
+            id="registration"
+            title="Registration"
+            description="Save your spot now. Limited seats for select workshops and competitions."
+            className="space-y-8"
+          >
+            <RegistrationForm />
+          </Section>
+
+          {/* Events */}
+          <Section
+            id="events"
+            title="Events"
+            description="Explore our lineup of competitions and challenges for the Civista Club Fest."
+            className="space-y-8"
+          >
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              {config.events.map((e) => (
+                <motion.div key={e.id} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
+                  <Card className="group h-full border-0 bg-gradient-to-br from-white to-gray-50 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 dark:from-gray-800 dark:to-gray-900">
+                    <CardHeader className="pb-4">
+                      <div className={`mb-3 inline-flex rounded-lg px-3 py-1 text-xs font-semibold text-white bg-gradient-to-r from-red-500 to-pink-500`}>
+                        Competition
+                      </div>
+                      <CardTitle className="text-xl font-semibold text-foreground">{e.name}</CardTitle>
+                      <CardDescription className="text-base text-muted-foreground">{e.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                          <IndianRupee className="w-4 h-4" />
+                          <span className="font-semibold">{e.price}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                          <Users className="w-4 h-4" />
+                          <span className="font-semibold">{e.teamSize}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3 h-3" />
+                          <span>{e.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-3 h-3" />
+                          <span>{e.venue}</span>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>
               ))}
             </motion.div>
-          </div>
-        </Section>
+          </Section>
 
-        {/* Registration */}
-        <Section
-          id="registration"
-          title="Registration"
-          description="Save your spot now. Limited seats for select workshops and competitions."
-          className="space-y-6"
-        >
-          <Card className="border-emerald-100 dark:border-emerald-900/30">
-            <CardHeader>
-              <CardTitle>Register for Civista Club Fest</CardTitle>
-              <CardDescription>Fill in your details and we’ll confirm via email.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form
-                className="grid gap-4 md:grid-cols-2"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  // In a real app, submit to an API or integration
-                  console.log("[v0] Registration submitted")
-                  alert("Thanks for registering! We’ll email you the details shortly.")
-                }}
-              >
-                <div className="grid gap-2">
-                  <label htmlFor="name" className="text-sm font-medium">
-                    Full Name
-                  </label>
-                  <Input id="name" name="name" placeholder="Jane Doe" required />
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="email" className="text-sm font-medium">
-                    Email
-                  </label>
-                  <Input id="email" type="email" name="email" placeholder="you@example.com" required />
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="year" className="text-sm font-medium">
-                    Year
-                  </label>
-                  <Input id="year" name="year" placeholder="2nd Year" />
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="department" className="text-sm font-medium">
-                    Department
-                  </label>
-                  <Input id="department" name="department" placeholder="Computer Science" />
-                </div>
-                <div className="md:col-span-2 grid gap-2">
-                  <label htmlFor="message" className="text-sm font-medium">
-                    Message (optional)
-                  </label>
-                  <Textarea id="message" name="message" placeholder="Tell us what you’re excited about!" rows={4} />
-                </div>
-                <div className="md:col-span-2">
-                  <Button type="submit" className="w-full md:w-auto">
-                    Submit Registration
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </Section>
-
-        {/* Events */}
-        <Section
-          id="events"
-          title="Events"
-          description="Explore our lineup of sessions, competitions, and showcases."
-          className="space-y-6"
-        >
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          {/* Schedule */}
+          <Section
+            id="schedule"
+            title="Schedule"
+            description={`Plan your day. All events take place on ${config.eventDate}.`}
+            className="space-y-8"
           >
-            {[
-              { title: "Hack Sprint", desc: "Rapid 6-hour build challenge.", tag: "Competition" },
-              { title: "UI/UX Jam", desc: "Design sprint with mentor feedback.", tag: "Workshop" },
-              { title: "ML Starter", desc: "Intro to ML with hands-on labs.", tag: "Workshop" },
-              { title: "Pitch Deck", desc: "Present your idea to judges.", tag: "Competition" },
-              { title: "Web3 101", desc: "Demystifying blockchain & dApps.", tag: "Talk" },
-              { title: "Project Expo", desc: "Showcase your best work.", tag: "Showcase" },
-            ].map((e) => (
-              <motion.div key={e.title} variants={{ hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0 } }}>
-                <Card className="group h-full transition hover:-translate-y-0.5 hover:shadow-md">
-                  <CardHeader>
-                    <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{e.tag}</div>
-                    <CardTitle className="text-lg">{e.title}</CardTitle>
-                    <CardDescription>{e.desc}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-20 rounded-md bg-muted/40" aria-hidden />
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </Section>
-
-        {/* Schedule */}
-        <Section
-          id="schedule"
-          title="Schedule"
-          description="Plan your day. Timings may be subject to minor adjustments."
-          className="space-y-6"
-        >
-          <div className="overflow-hidden rounded-xl border">
-            <div className="grid grid-cols-3 bg-muted/50 p-3 text-sm font-medium">
-              <div>Time</div>
-              <div>Session</div>
-              <div>Venue</div>
+            <div className="overflow-hidden rounded-2xl border-0 bg-gradient-to-br from-white to-gray-50 shadow-xl dark:from-gray-800 dark:to-gray-900">
+              <div className="grid grid-cols-4 bg-gradient-to-r from-blue-600 to-emerald-600 p-4 text-sm font-semibold text-white">
+                <div>Time</div>
+                <div>Event</div>
+                <div>Venue</div>
+                <div>Team Size</div>
+              </div>
+              <motion.ul
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true }}
+                variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
+                className="divide-y divide-gray-200 dark:divide-gray-700"
+              >
+                {config.events.map((s) => (
+                  <motion.li
+                    key={s.name}
+                    variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
+                    className="grid grid-cols-4 p-4 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <div className="font-semibold text-blue-600 dark:text-blue-400">{s.time}</div>
+                    <div className="font-medium text-foreground">{s.name}</div>
+                    <div className="text-muted-foreground">{s.venue}</div>
+                    <div className="text-muted-foreground">{s.teamSize} {s.teamSize === 1 ? 'participant' : 'participants'}</div>
+                  </motion.li>
+                ))}
+              </motion.ul>
             </div>
-            <motion.ul
+          </Section>
+
+          {/* Team */}
+          <Section id="team" title="Team" description="Meet the organizers powering Civista Club." className="space-y-8">
+            <motion.div
               initial="hidden"
               whileInView="show"
               viewport={{ once: true }}
-              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }}
-              className="divide-y"
+              variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
+              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
             >
-              {[
-                { time: "09:00", name: "Opening Ceremony", place: "Auditorium" },
-                { time: "10:00", name: "Keynote: Future of Tech", place: "Auditorium" },
-                { time: "11:30", name: "Workshops Begin", place: "Labs" },
-                { time: "14:00", name: "Hack Sprint", place: "Innovation Hall" },
-                { time: "17:30", name: "Project Expo", place: "Main Hall" },
-                { time: "19:00", name: "Awards & Closing", place: "Auditorium" },
-              ].map((s) => (
-                <motion.li
-                  key={s.name}
-                  variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
-                  className="grid grid-cols-3 p-3 text-sm"
-                >
-                  <div className="font-medium text-blue-700 dark:text-blue-300">{s.time}</div>
-                  <div>{s.name}</div>
-                  <div className="text-muted-foreground">{s.place}</div>
-                </motion.li>
+              {config.teamMembers.map((m) => (
+                <motion.div key={m.name} variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
+                  <Card className="h-full border-0 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 dark:from-gray-800 dark:to-gray-900">
+                    <CardHeader className="flex flex-col items-center gap-4 pb-4 text-center">
+                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center text-white font-bold text-xl">
+                        {m.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-foreground">{m.name}</CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground whitespace-pre-line">{m.role}</CardDescription>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                        📞 {m.contact}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
-            </motion.ul>
-          </div>
-        </Section>
+            </motion.div>
+          </Section>
 
-        {/* Team */}
-        <Section id="team" title="Team" description="Meet the organizers powering Civista Club." className="space-y-6">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          {/* Contact */}
+          <Section
+            id="contact"
+            title="Contact Us"
+            description="Have questions or want to partner with us? Send a message."
+            className="space-y-8"
           >
-            {[
-              { name: "Aarav Sharma", role: "President" },
-              { name: "Isha Patel", role: "Vice President" },
-              { name: "Rahul Mehta", role: "Events Lead" },
-              { name: "Neha Gupta", role: "Design Lead" },
-              { name: "Karan Singh", role: "Tech Lead" },
-              { name: "Ananya Rao", role: "Operations" },
-            ].map((m) => (
-              <motion.div key={m.name} variants={{ hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } }}>
-                <Card className="h-full">
-                  <CardHeader className="flex flex-row items-center gap-4">
-                    <img
-                      src={`/placeholder.svg?height=64&width=64&query=profile%20avatar`}
-                      alt=""
-                      className="h-16 w-16 rounded-full border object-cover"
-                    />
-                    <div>
-                      <CardTitle className="text-base">{m.name}</CardTitle>
-                      <CardDescription>{m.role}</CardDescription>
-                    </div>
-                  </CardHeader>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
-        </Section>
+            <Card className="border-0 bg-gradient-to-br from-white to-gray-50 shadow-xl dark:from-gray-800 dark:to-gray-900">
+              <CardContent className="pt-8">
+                <form
+                  className="grid gap-6 md:grid-cols-2"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    console.log("[v0] Contact form submitted")
+                    alert("Thanks! We'll get back to you soon.")
+                  }}
+                >
+                  <div className="grid gap-2">
+                    <label htmlFor="c-name" className="text-sm font-medium text-foreground">
+                      Name
+                    </label>
+                    <Input id="c-name" name="name" placeholder="Your name" required className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div className="grid gap-2">
+                    <label htmlFor="c-email" className="text-sm font-medium text-foreground">
+                      Email
+                    </label>
+                    <Input id="c-email" type="email" name="email" placeholder="you@example.com" required className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div className="md:col-span-2 grid gap-2">
+                    <label htmlFor="c-message" className="text-sm font-medium text-foreground">
+                      Message
+                    </label>
+                    <Textarea id="c-message" name="message" placeholder="How can we help?" rows={5} required className="border-gray-200 focus:border-blue-500 focus:ring-blue-500" />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Button type="submit" className="h-12 bg-gradient-to-r from-blue-600 to-emerald-600 px-8 text-lg font-semibold text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      Send Message
+                    </Button>
+                  </div>
+                </form>
+                <div className="mt-6 text-base text-muted-foreground">Or email us at: {config.contactEmail}</div>
+              </CardContent>
+            </Card>
+          </Section>
 
-        {/* Contact */}
-        <Section
-          id="contact"
-          title="Contact Us"
-          description="Have questions or want to partner with us? Send a message."
-          className="space-y-6"
-        >
-          <Card>
-            <CardContent className="pt-6">
-              <form
-                className="grid gap-4 md:grid-cols-2"
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  console.log("[v0] Contact form submitted")
-                  alert("Thanks! We’ll get back to you soon.")
-                }}
-              >
-                <div className="grid gap-2">
-                  <label htmlFor="c-name" className="text-sm font-medium">
-                    Name
-                  </label>
-                  <Input id="c-name" name="name" placeholder="Your name" required />
-                </div>
-                <div className="grid gap-2">
-                  <label htmlFor="c-email" className="text-sm font-medium">
-                    Email
-                  </label>
-                  <Input id="c-email" type="email" name="email" placeholder="you@example.com" required />
-                </div>
-                <div className="md:col-span-2 grid gap-2">
-                  <label htmlFor="c-message" className="text-sm font-medium">
-                    Message
-                  </label>
-                  <Textarea id="c-message" name="message" placeholder="How can we help?" rows={5} required />
-                </div>
-                <div className="md:col-span-2">
-                  <Button type="submit" className="w-full md:w-auto">
-                    Send Message
-                  </Button>
-                </div>
-              </form>
-              <div className="mt-4 text-sm text-muted-foreground">Or email us at: civista.club@example.edu</div>
-            </CardContent>
-          </Card>
-        </Section>
-
-        {/* Footer */}
-        <footer className="pb-10 pt-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Civista Club — All rights reserved.
-        </footer>
-      </div>
-    </main>
+          {/* Footer */}
+          <footer className="pb-16 pt-8 text-center text-sm text-muted-foreground border-t border-gray-200 dark:border-gray-800">
+            © 2025 Civista Club — All rights reserved.
+          </footer>
+        </div>
+      </main>
+    </>
   )
 }
