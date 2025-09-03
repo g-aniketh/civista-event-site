@@ -63,15 +63,11 @@ export function RegistrationForm() {
     // Roll number validation
     if (!formData.roll.trim()) {
       newErrors.roll = "Roll number is required"
-    } else if (!/^\d{1,10}$/.test(formData.roll.trim())) {
-      newErrors.roll = "Roll number must contain only numbers (1-10 digits)"
     }
 
     // Department validation
     if (!formData.dept.trim()) {
       newErrors.dept = "Department is required"
-    } else if (!/^[A-Z]{2,4}$/.test(formData.dept.trim().toUpperCase())) {
-      newErrors.dept = "Department should be 2-4 letters (e.g., CSE, ECE, ME)"
     }
 
     // Email validation
@@ -79,8 +75,6 @@ export function RegistrationForm() {
       newErrors.email = "Email is required"
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       newErrors.email = "Please enter a valid email address"
-    } else if (!formData.email.trim().endsWith('.edu') && !formData.email.trim().includes('@gmail.com')) {
-      newErrors.email = "Please use your college email or Gmail"
     }
 
     // Event validation
@@ -169,12 +163,6 @@ export function RegistrationForm() {
         </div>
         <div>
           <h3 className="text-2xl font-bold text-green-900 mb-2">Registration Successful!</h3>
-          <p className="text-green-700 mb-4">
-            Thank you for registering for {selectedEvent?.name}. We've sent a confirmation to your email.
-          </p>
-          <p className="text-sm text-green-600">
-            Please complete your payment of ₹{selectedEvent?.price} to confirm your spot.
-          </p>
         </div>
         <Button
           onClick={() => setIsSubmitted(false)}

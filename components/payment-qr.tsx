@@ -1,7 +1,8 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { QrCode, CreditCard } from "lucide-react"
+import { CreditCard } from "lucide-react"
+import Image from "next/image"
 
 export function PaymentQR() {
   return (
@@ -13,11 +14,14 @@ export function PaymentQR() {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex justify-center">
-        <div className="w-64 h-64 bg-white rounded-2xl border-4 border-amber-400 flex items-center justify-center shadow-lg">
-          <div className="text-center space-y-2">
-            <QrCode className="w-32 h-32 text-amber-600 mx-auto" />
-            <p className="text-sm text-amber-700 font-medium">Scan to pay</p>
-          </div>
+        <div className="w-64 h-64 bg-white rounded-2xl border-4 border-amber-400 flex items-center justify-center shadow-lg overflow-hidden">
+          <Image
+            src="/images/civ_qr.jpg"
+            alt="Payment QR Code"
+            width={240}
+            height={240}
+            className="w-full h-full object-contain p-2"
+          />
         </div>
       </CardContent>
     </Card>
