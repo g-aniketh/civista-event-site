@@ -17,8 +17,8 @@ function ClientOnlyAnalytics() {
 }
 
 export const metadata: Metadata = {
-  title: "Civista Club - Annual College Fest",
-  description: "A celebration of creativity, innovation, and community. Join us for workshops, competitions, and unforgettable experiences.",
+      title: "Civista Club - Technovista 2025",
+      description: "A celebration of creativity, innovation, and community at Technovista 2025. Join us for workshops, competitions, and unforgettable experiences.",
   generator: "v0.app",
 }
 

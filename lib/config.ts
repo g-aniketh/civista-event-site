@@ -6,7 +6,7 @@ export const config = {
   eventDate: "15th September 2025",
   
   // Contact email
-  contactEmail: "civista.club@example.edu",
+  contactEmail: "civista.club@vce.ac.in",
   
   // Organization name
   organizationName: "Civista Club",

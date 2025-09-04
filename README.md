@@ -1,6 +1,6 @@
-# Civista Club Event Registration Site
+# Civista Club - Technovista 2025 Event Registration Site
 
-A modern, responsive event registration website built with Next.js, TypeScript, and Tailwind CSS. Features Google Sheets integration for data collection and comprehensive form validation.
+A modern, responsive event registration website for Technovista 2025, built with Next.js, TypeScript, and Tailwind CSS. Features Google Sheets integration for data collection and comprehensive form validation.
 
 ## Features
 

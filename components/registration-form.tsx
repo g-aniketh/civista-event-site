@@ -7,18 +7,22 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, AlertCircle, Loader2, QrCode, Calendar, Users, IndianRupee } from "lucide-react"
+import { CheckCircle, AlertCircle, Loader2, QrCode, Calendar, Users, IndianRupee, Plus, Trash2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { PaymentQR } from "./payment-qr"
 import { config } from "@/lib/config"
 
-interface FormData {
+interface TeamMember {
   name: string
   roll: string
   dept: string
   email: string
+}
+
+interface FormData {
   event: string
   college: string
+  teamMembers: TeamMember[]
 }
 
 interface FormErrors {
@@ -35,12 +39,9 @@ const schedule = [
 
 export function RegistrationForm() {
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    roll: "",
-    dept: "",
-    email: "",
     event: "",
-    college: ""
+    college: "",
+    teamMembers: []
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -48,34 +49,44 @@ export function RegistrationForm() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState("")
 
+  // Initialize team members when event changes
+  const handleEventChange = (eventId: string) => {
+    const selectedEvent = events.find(e => e.id === eventId)
+    if (selectedEvent) {
+      const teamSize = selectedEvent.teamSize
+      const newTeamMembers: TeamMember[] = []
+      
+      for (let i = 0; i < teamSize; i++) {
+        newTeamMembers.push({
+          name: "",
+          roll: "",
+          dept: "",
+          email: ""
+        })
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        event: eventId,
+        teamMembers: newTeamMembers
+      }))
+      
+      // Clear errors when event changes
+      setErrors({})
+    }
+  }
+
+  const handleTeamMemberChange = (index: number, field: keyof TeamMember, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      teamMembers: prev.teamMembers.map((member, i) => 
+        i === index ? { ...member, [field]: value } : member
+      )
+    }))
+  }
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = "Full name is required"
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters long"
-    } else if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) {
-      newErrors.name = "Name can only contain letters and spaces"
-    }
-
-    // Roll number validation
-    if (!formData.roll.trim()) {
-      newErrors.roll = "Roll number is required"
-    }
-
-    // Department validation
-    if (!formData.dept.trim()) {
-      newErrors.dept = "Department is required"
-    }
-
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = "Please enter a valid email address"
-    }
 
     // Event validation
     if (!formData.event) {
@@ -87,6 +98,39 @@ export function RegistrationForm() {
       newErrors.college = "College name is required"
     } else if (formData.college.trim().length < 3) {
       newErrors.college = "College name must be at least 3 characters long"
+    }
+
+    // Team members validation
+    if (formData.teamMembers.length === 0) {
+      newErrors.teamMembers = "Please select an event first"
+    } else {
+      formData.teamMembers.forEach((member, index) => {
+        // Name validation
+        if (!member.name.trim()) {
+          newErrors[`member_${index}_name`] = `Team member ${index + 1} name is required`
+        } else if (member.name.trim().length < 2) {
+          newErrors[`member_${index}_name`] = `Team member ${index + 1} name must be at least 2 characters long`
+        } else if (!/^[a-zA-Z\s]+$/.test(member.name.trim())) {
+          newErrors[`member_${index}_name`] = `Team member ${index + 1} name can only contain letters and spaces`
+        }
+
+        // Roll number validation
+        if (!member.roll.trim()) {
+          newErrors[`member_${index}_roll`] = `Team member ${index + 1} roll number is required`
+        }
+
+        // Department validation
+        if (!member.dept.trim()) {
+          newErrors[`member_${index}_dept`] = `Team member ${index + 1} department is required`
+        }
+
+        // Email validation
+        if (!member.email.trim()) {
+          newErrors[`member_${index}_email`] = `Team member ${index + 1} email is required`
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(member.email.trim())) {
+          newErrors[`member_${index}_email`] = `Team member ${index + 1} please enter a valid email address`
+        }
+      })
     }
 
     setErrors(newErrors)
@@ -116,31 +160,43 @@ export function RegistrationForm() {
       // Google Sheets Web App URL from config
       const WEB_APP_URL = config.googleSheetsUrl
       
-      const params = new URLSearchParams({
-        name: formData.name.trim(),
-        roll: formData.roll.trim(),
-        dept: formData.dept.trim().toUpperCase(),
-        email: formData.email.trim(),
-        event: formData.event,
-        college: formData.college.trim()
-      })
-
-      const response = await fetch(`${WEB_APP_URL}?${params.toString()}`)
-      
-      if (response.ok) {
-        setIsSubmitted(true)
-        // Reset form
-        setFormData({
-          name: "",
-          roll: "",
-          dept: "",
-          email: "",
-          event: "",
-          college: ""
+      // Submit each team member
+      for (let i = 0; i < formData.teamMembers.length; i++) {
+        const member = formData.teamMembers[i]
+        
+        // Add role indicator to the name
+        let displayName = member.name.trim()
+        if (i === 0) {
+          displayName += " (Team Lead)"
+        } else {
+          displayName += ` (Team Member ${i + 1})`
+        }
+        
+        const params = new URLSearchParams({
+          name: displayName,
+          roll: member.roll.trim(),
+          dept: member.dept.trim().toUpperCase(),
+          email: member.email.trim(),
+          event: formData.event,
+          college: formData.college.trim(),
+          teamMemberNumber: (i + 1).toString(),
+          totalTeamMembers: formData.teamMembers.length.toString()
         })
-      } else {
-        throw new Error("Failed to submit registration")
+
+        const response = await fetch(`${WEB_APP_URL}?${params.toString()}`)
+        
+        if (!response.ok) {
+          throw new Error(`Failed to submit team member ${i + 1}`)
+        }
       }
+      
+      setIsSubmitted(true)
+      // Reset form
+      setFormData({
+        event: "",
+        college: "",
+        teamMembers: []
+      })
     } catch (error) {
       console.error("Registration error:", error)
       setSubmitError("Something went wrong. Please try again or contact support.")
@@ -163,12 +219,13 @@ export function RegistrationForm() {
         </div>
         <div>
           <h3 className="text-2xl font-bold text-green-900 mb-2">Registration Successful!</h3>
+          <p className="text-green-700">All team members have been registered successfully for Technovista 2025.</p>
         </div>
         <Button
           onClick={() => setIsSubmitted(false)}
           className="bg-green-600 hover:bg-green-700"
         >
-          Register Another Person
+          Register Another Team
         </Button>
       </motion.div>
     )
@@ -184,7 +241,7 @@ export function RegistrationForm() {
             Event Date: {config.eventDate}
           </CardTitle>
           <CardDescription className="text-blue-700 dark:text-blue-300">
-            Mark your calendar and prepare for an exciting day of competitions!
+            Mark your calendar and prepare for an exciting day of competitions at Technovista 2025!
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -208,131 +265,19 @@ export function RegistrationForm() {
         {/* Registration Form */}
         <Card className="border-0 bg-gradient-to-br from-white to-gray-50 shadow-xl dark:from-gray-800 dark:to-gray-900">
           <CardHeader className="pb-6">
-            <CardTitle className="text-2xl font-bold text-foreground">Event Registration Form</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Technovista 2025 Registration Form</CardTitle>
             <CardDescription className="text-lg text-muted-foreground">
-              Fill in your details to register for the Civista Club events. All fields are required.
+              Select an event and fill in all team member details for Technovista 2025. All fields are required.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Personal Information */}
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    Full Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="Enter your full name"
-                    className={`h-12 ${errors.name ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
-                  />
-                  <AnimatePresence>
-                    {errors.name && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                        <Alert variant="destructive" className="py-2">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertDescription className="text-sm">{errors.name}</AlertDescription>
-                        </Alert>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="roll" className="text-sm font-medium">
-                    Roll Number *
-                  </Label>
-                  <Input
-                    id="roll"
-                    value={formData.roll}
-                    onChange={(e) => handleInputChange("roll", e.target.value)}
-                    placeholder="Enter your roll number"
-                    className={`h-12 ${errors.roll ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
-                  />
-                  <AnimatePresence>
-                    {errors.roll && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                        <Alert variant="destructive" className="py-2">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertDescription className="text-sm">{errors.roll}</AlertDescription>
-                        </Alert>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="dept" className="text-sm font-medium">
-                    Department *
-                  </Label>
-                  <Input
-                    id="dept"
-                    value={formData.dept}
-                    onChange={(e) => handleInputChange("dept", e.target.value)}
-                    placeholder="CSE, ECE, ME, etc."
-                    className={`h-12 ${errors.dept ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
-                  />
-                  <AnimatePresence>
-                    {errors.dept && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                        <Alert variant="destructive" className="py-2">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertDescription className="text-sm">{errors.dept}</AlertDescription>
-                        </Alert>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    Email Address *
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="your.email@college.edu"
-                    className={`h-12 ${errors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
-                  />
-                  <AnimatePresence>
-                    {errors.email && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                        <Alert variant="destructive" className="py-2">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertDescription className="text-sm">{errors.email}</AlertDescription>
-                        </Alert>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-
-              {/* Event Selection */}
+              {/* Event Selection - First Field */}
               <div className="space-y-2">
                 <Label htmlFor="event" className="text-sm font-medium">
                   Select Event *
                 </Label>
-                <Select value={formData.event} onValueChange={(value) => handleInputChange("event", value)}>
+                <Select value={formData.event} onValueChange={handleEventChange}>
                   <SelectTrigger className={`h-12 ${errors.event ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}>
                     <SelectValue placeholder="Choose an event to participate in" />
                   </SelectTrigger>
@@ -396,6 +341,152 @@ export function RegistrationForm() {
                 </AnimatePresence>
               </div>
 
+              {/* Team Members Section */}
+              {formData.teamMembers.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Team Member Details ({formData.teamMembers.length} {formData.teamMembers.length === 1 ? 'member' : 'members'})
+                    </h3>
+                  </div>
+                  
+                  {formData.teamMembers.map((member, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                    >
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <h4 className="font-medium text-foreground">
+                          {index === 0 ? 'Team Lead' : `Team Member ${index + 1}`}
+                        </h4>
+                      </div>
+                      
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor={`member-${index}-name`} className="text-sm font-medium">
+                            Full Name *
+                          </Label>
+                          <Input
+                            id={`member-${index}-name`}
+                            value={member.name}
+                            onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
+                            placeholder="Enter full name"
+                            className={`h-12 ${errors[`member_${index}_name`] ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
+                          />
+                          <AnimatePresence>
+                            {errors[`member_${index}_name`] && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                              >
+                                <Alert variant="destructive" className="py-2">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <AlertDescription className="text-sm">{errors[`member_${index}_name`]}</AlertDescription>
+                                </Alert>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor={`member-${index}-roll`} className="text-sm font-medium">
+                            Roll Number *
+                          </Label>
+                          <Input
+                            id={`member-${index}-roll`}
+                            value={member.roll}
+                            onChange={(e) => handleTeamMemberChange(index, "roll", e.target.value)}
+                            placeholder="Enter roll number"
+                            className={`h-12 ${errors[`member_${index}_roll`] ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
+                          />
+                          <AnimatePresence>
+                            {errors[`member_${index}_roll`] && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                              >
+                                <Alert variant="destructive" className="py-2">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <AlertDescription className="text-sm">{errors[`member_${index}_roll`]}</AlertDescription>
+                                </Alert>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor={`member-${index}-dept`} className="text-sm font-medium">
+                            Department *
+                          </Label>
+                          <Input
+                            id={`member-${index}-dept`}
+                            value={member.dept}
+                            onChange={(e) => handleTeamMemberChange(index, "dept", e.target.value)}
+                            placeholder="CSE, ECE, ME, etc."
+                            className={`h-12 ${errors[`member_${index}_dept`] ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
+                          />
+                          <AnimatePresence>
+                            {errors[`member_${index}_dept`] && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                              >
+                                <Alert variant="destructive" className="py-2">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <AlertDescription className="text-sm">{errors[`member_${index}_dept`]}</AlertDescription>
+                                </Alert>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor={`member-${index}-email`} className="text-sm font-medium">
+                            Email Address *
+                          </Label>
+                          <Input
+                            id={`member-${index}-email`}
+                            type="email"
+                            value={member.email}
+                            onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
+                            placeholder="your.email@college.edu"
+                            className={`h-12 ${errors[`member_${index}_email`] ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-blue-500 focus:ring-blue-500"}`}
+                          />
+                          <AnimatePresence>
+                            {errors[`member_${index}_email`] && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                              >
+                                <Alert variant="destructive" className="py-2">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <AlertDescription className="text-sm">{errors[`member_${index}_email`]}</AlertDescription>
+                                </Alert>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+
               {/* Selected Event Details */}
               {selectedEvent && (
                 <motion.div
@@ -417,20 +508,22 @@ export function RegistrationForm() {
               )}
 
               {/* Submit Button */}
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Registration"
-                )}
-              </Button>
+              {formData.teamMembers.length > 0 && (
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-12 bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    `Submit Registration (${formData.teamMembers.length} ${formData.teamMembers.length === 1 ? 'member' : 'members'})`
+                  )}
+                </Button>
+              )}
 
               {/* Submit Error */}
               <AnimatePresence>
@@ -466,6 +559,10 @@ export function RegistrationForm() {
               <div className="space-y-2 text-sm text-green-800 dark:text-green-200">
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span>Select your event and fill team details for Technovista 2025</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                   <span>Submit your registration form</span>
                 </div>
                 <div className="flex items-start gap-2">
@@ -478,7 +575,7 @@ export function RegistrationForm() {
                 </div>
                 <div className="flex items-start gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span>Join us on September 15th!</span>
+                  <span>Join us at Technovista 2025 on September 15th!</span>
                 </div>
               </div>
             </CardContent>

@@ -99,7 +99,7 @@ export default function Page() {
           <Section
             id="home"
             title="Civista Club Presents: Technovista 2025"
-            description="A celebration of creativity, innovation, and community. Join us for workshops, competitions, and unforgettable experiences."
+            description="A celebration of creativity, innovation, and community at Technovista 2025. Join us for workshops, competitions, and unforgettable experiences."
             className="space-y-12"
           >
             {/* Hero Content */}
@@ -113,9 +113,9 @@ export default function Page() {
                 {/* Main Heading */}
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl">
-                    Experience the Future on{" "}
+                    Experience the Future at{" "}
                     <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">
-                      Campus
+                      Technovista 2025
                     </span>
                   </h1>
                   <div className="h-1 w-32 rounded-full bg-gradient-to-r from-blue-600 to-emerald-600" aria-hidden />
@@ -123,7 +123,7 @@ export default function Page() {
                 
                 {/* Subtitle */}
                 <p className="max-w-3xl text-xl leading-relaxed text-muted-foreground md:text-2xl">
-                  Our Mission: To empower students through hands-on events and a supportive community. We cultivate
+                  Our Mission: To empower students through Technovista 2025's hands-on events and a supportive community. We cultivate
                   leadership, creativity, and curiosity—creating real impact that lasts beyond the event.
                 </p>
                 
@@ -166,19 +166,19 @@ export default function Page() {
               {[
                 { 
                   title: "Workshops", 
-                  desc: "Hands-on sessions led by industry mentors and experts.",
+                  desc: "Hands-on sessions led by industry mentors and experts at Technovista 2025.",
                   icon: Sparkles,
                   color: "from-blue-500 to-blue-600"
                 },
                 { 
                   title: "Competitions", 
-                  desc: "Showcase your talent in coding, design, and innovation.",
+                  desc: "Showcase your talent in coding, design, and innovation at Technovista 2025.",
                   icon: Trophy,
                   color: "from-purple-500 to-purple-600"
                 },
                 { 
                   title: "Showcase", 
-                  desc: "Explore amazing projects and innovations from your peers.",
+                  desc: "Explore amazing projects and innovations from your peers at Technovista 2025.",
                   icon: Users,
                   color: "from-emerald-500 to-emerald-600"
                 },
@@ -208,7 +208,7 @@ export default function Page() {
           <Section
             id="registration"
             title="Registration"
-            description="Save your spot now. Limited seats for select workshops and competitions."
+            description="Save your spot now for Technovista 2025. Limited seats for select workshops and competitions."
             className="space-y-8"
           >
             <RegistrationForm />
@@ -218,7 +218,7 @@ export default function Page() {
           <Section
             id="events"
             title="Events"
-            description="Explore our lineup of competitions and challenges for the Civista Club Fest."
+            description="Explore our lineup of competitions and challenges for Technovista 2025."
             className="space-y-8"
           >
             <motion.div
@@ -270,7 +270,7 @@ export default function Page() {
           <Section
             id="schedule"
             title="Schedule"
-            description={`Plan your day. All events take place on ${config.eventDate}.`}
+            description={`Plan your day at Technovista 2025. All events take place on ${config.eventDate}.`}
             className="space-y-8"
           >
             <div className="overflow-hidden rounded-2xl border-0 bg-gradient-to-br from-white to-gray-50 shadow-xl dark:from-gray-800 dark:to-gray-900">
@@ -304,7 +304,7 @@ export default function Page() {
           </Section>
 
           {/* Team */}
-          <Section id="team" title="Team" description="Meet the organizers powering Civista Club." className="space-y-8">
+          <Section id="team" title="Team" description="Meet the organizers powering Civista Club and Technovista 2025." className="space-y-8">
             <motion.div
               initial="hidden"
               whileInView="show"
@@ -339,7 +339,7 @@ export default function Page() {
           <Section
             id="contact"
             title="Contact Us"
-            description="Have questions or want to partner with us? Send a message."
+            description="Have questions about Technovista 2025 or want to partner with us? Send a message."
             className="space-y-8"
           >
             <Card className="border-0 bg-gradient-to-br from-white to-gray-50 shadow-xl dark:from-gray-800 dark:to-gray-900">
@@ -348,7 +348,6 @@ export default function Page() {
                   className="grid gap-6 md:grid-cols-2"
                   onSubmit={(e) => {
                     e.preventDefault()
-                    console.log("[v0] Contact form submitted")
                     alert("Thanks! We'll get back to you soon.")
                   }}
                 >
